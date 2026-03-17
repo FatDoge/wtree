@@ -1,0 +1,99 @@
+{
+  "name": "@fatdoge/wtree",
+  "private": false,
+  "version": "0.1.10",
+  "description": "CLI + UI tool for managing git worktrees",
+  "keywords": [
+    "git",
+    "worktree",
+    "cli",
+    "ui",
+    "manager"
+  ],
+  "author": "fatdoge",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FatDoge/wtree.git"
+  },
+  "bugs": {
+    "url": "https://github.com/FatDoge/wtree/issues"
+  },
+  "homepage": "https://github.com/FatDoge/wtree#readme",
+  "type": "module",
+  "bin": {
+    "wtree": "dist-node/api/cli/wtree.js"
+  },
+  "files": [
+    "dist-node",
+    "dist",
+    "api",
+    "src",
+    "shared",
+    "index.html",
+    "vite.config.ts",
+    "tailwind.config.js",
+    "postcss.config.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "client:dev": "vite",
+    "build:ui": "vite build",
+    "build:cli": "tsc -p tsconfig.node.json",
+    "build": "pnpm run build:cli && pnpm run build:ui",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "check": "tsc --noEmit && tsc -p tsconfig.node.json --noEmit",
+    "server:dev": "nodemon",
+    "dev": "concurrently \"pnpm run client:dev\" \"pnpm run server:dev\"",
+    "wtree": "tsx api/cli/wtree.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^4.4.1",
+    "autoprefixer": "^10.4.21",
+    "chalk": "^5.6.0",
+    "clsx": "^2.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^4.21.2",
+    "i18next": "^25.8.17",
+    "i18next-browser-languagedetector": "^8.2.1",
+    "inquirer": "^12.9.4",
+    "lucide-react": "^0.511.0",
+    "postcss": "^8.5.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-i18next": "^16.5.7",
+    "react-router-dom": "^7.3.0",
+    "serve-static": "^2.2.1",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.0.2",
+    "tailwindcss": "^3.4.17",
+    "vite": "^6.3.5",
+    "vite-tsconfig-paths": "^5.1.4",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.25.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.15.30",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/serve-static": "^2.2.0",
+    "@vercel/node": "^5.3.6",
+    "babel-plugin-react-dev-locator": "^1.0.0",
+    "concurrently": "^9.2.0",
+    "eslint": "^9.25.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^16.0.0",
+    "nodemon": "^3.1.10",
+    "tsx": "^4.20.3",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.30.1",
+    "vitest": "^2.1.9"
+  }
+}

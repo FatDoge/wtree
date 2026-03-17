@@ -1,0 +1,145 @@
+{
+  "worktrees": {
+    "title": "TreeLab",
+    "subtitle": "通过 UI 管理当前仓库的 git worktree",
+    "table": {
+      "path": "路径",
+      "branch": "分支 / HEAD",
+      "flags": "标志",
+      "actions": "操作"
+    },
+    "empty": "未读取到 worktree。确认你在 git 仓库中启动了 UI。",
+    "details": "详情",
+    "detailsPanel": {
+      "path": "路径",
+      "branch": "分支",
+      "main": "主 Worktree",
+      "yes": "是",
+      "no": "否",
+      "head": "HEAD"
+    },
+    "selectToView": "选择一个 worktree 查看详情。",
+    "help": {
+      "title": "帮助",
+      "desc": "删除前确认目标路径，主 worktree 无法删除。",
+      "viewCommands": "查看命令速查"
+    },
+    "actions": {
+      "copy": "复制",
+      "lock": "锁定",
+      "unlock": "解锁",
+      "ide": "IDE",
+      "folder": "文件夹",
+      "delete": "删除"
+    },
+    "toast": {
+      "copySuccess": "已复制路径",
+      "copyFailed": "复制失败",
+      "lockSuccess": "已锁定",
+      "lockFailed": "锁定失败",
+      "unlockSuccess": "已解锁",
+      "unlockFailed": "解锁失败",
+      "ideSuccess": "已在 IDE 打开",
+      "ideFailed": "打开 IDE 失败",
+      "folderSuccess": "已打开文件夹",
+      "folderFailed": "打开文件夹失败",
+      "deleteSuccess": "已删除",
+      "forceDeleteSuccess": "已强制删除",
+      "deleteFailed": "删除失败",
+      "deleteWarning": "存在未提交更改或未跟踪文件。请确认是否强制删除。"
+    },
+    "deleteModal": {
+      "title": "确认删除",
+      "forceTitle": "强制删除确认",
+      "desc": "将移除以下 worktree：",
+      "warning": "检测到未提交更改。强制删除将丢失这些更改！",
+      "normalNote": "如果存在未提交更改，git 可能会拒绝删除。",
+      "cancel": "取消",
+      "confirm": "删除",
+      "forceConfirm": "强制删除",
+      "deleting": "删除中..."
+    }
+  },
+  "create": {
+    "title": "创建 Worktree",
+    "back": "返回",
+    "help": "帮助",
+    "tabs": {
+      "existing": "现有分支/提交",
+      "new": "新分支"
+    },
+    "fields": {
+      "ref": "Ref（分支名或 commit）",
+      "refPlaceholder": "例如 main / feature/x / 3a2f...",
+      "newBranch": "New Branch",
+      "newBranchPlaceholder": "例如 feature/awesome",
+      "path": "Path（相对 repo root 或绝对路径）",
+      "pathPlaceholder": "例如 worktrees/feature-x"
+    },
+    "submit": "创建",
+    "preview": {
+      "title": "将执行",
+      "desc": "UI 仅调用本地 API，实际执行 git 命令发生在你的机器上。"
+    },
+    "result": {
+      "title": "结果",
+      "creating": "正在创建…",
+      "success": "创建成功",
+      "backToList": "回到列表",
+      "empty": "提交创建后会在这里显示结果。"
+    }
+  },
+  "settings": {
+    "title": "设置",
+    "preferences": {
+      "title": "偏好设置",
+      "theme": "主题模式",
+      "language": "语言",
+      "light": "浅色",
+      "dark": "深色",
+      "system": "跟随系统",
+      "en": "English",
+      "zh": "中文"
+    },
+    "cli": {
+      "title": "CLI 配置",
+      "baseDir": "baseDir",
+      "baseDirPlaceholder": "默认存放在哪里，例如 ../",
+      "openCommand": "openCommand",
+      "openCommandPlaceholder": "留空自动检测 (open / start / xdg-open)",
+      "editorCommand": "editorCommand",
+      "editorCommandPlaceholder": "例如 code / cursor / trae",
+      "reset": "重置",
+      "save": "保存配置"
+    },
+    "maintenance": {
+      "title": "维护",
+      "prune": "清理无效 Worktree (Prune)",
+      "pruneDesc": "执行 `git worktree prune`，移除已不存在的 worktree 记录。"
+    },
+    "note": {
+      "title": "说明",
+      "desc": "设置保存在 `~/.config/wtree/config.json`，UI 通过本地 API 读写。"
+    },
+    "toast": {
+      "saveSuccess": "已保存配置",
+      "saveFailed": "保存失败",
+      "pruneSuccess": "清理完成",
+      "pruneFailed": "清理失败"
+    }
+  },
+  "helpPage": {
+    "title": "帮助",
+    "commands": "命令速查",
+    "commandsDesc": "默认不带参数会进入交互式命令行；加上 --ui 会启动本地 UI。",
+    "faq": {
+      "title": "常见问题",
+      "q1": "不在 git 仓库目录？",
+      "a1": "在仓库内运行，或用 `wtree --repo /path/to/repo` 指定路径。",
+      "q2": "端口被占用？",
+      "a2": "使用 `wtree --ui --port 0` 让系统自动分配端口。",
+      "q3": "删除失败（有未提交更改）？",
+      "a3": "在 CLI 模式和 UI 模式下均已支持强制删除（Force Delete），但请注意未提交的更改会丢失。"
+    }
+  }
+}

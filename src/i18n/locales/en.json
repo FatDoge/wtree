@@ -1,0 +1,145 @@
+{
+  "worktrees": {
+    "title": "TreeLab",
+    "subtitle": "Manage git worktrees in current repository via UI",
+    "table": {
+      "path": "Path",
+      "branch": "Branch / HEAD",
+      "flags": "Flags",
+      "actions": "Actions"
+    },
+    "empty": "No worktrees found. Make sure you started UI in a git repository.",
+    "details": "Details",
+    "detailsPanel": {
+      "path": "Path",
+      "branch": "Branch",
+      "main": "Main Worktree",
+      "yes": "Yes",
+      "no": "No",
+      "head": "HEAD"
+    },
+    "selectToView": "Select a worktree to view details.",
+    "help": {
+      "title": "Help",
+      "desc": "Check target path before deletion. Main worktree cannot be deleted.",
+      "viewCommands": "View Commands Reference"
+    },
+    "actions": {
+      "copy": "Copy",
+      "lock": "Lock",
+      "unlock": "Unlock",
+      "ide": "IDE",
+      "folder": "Folder",
+      "delete": "Delete"
+    },
+    "toast": {
+      "copySuccess": "Path copied",
+      "copyFailed": "Copy failed",
+      "lockSuccess": "Locked",
+      "lockFailed": "Lock failed",
+      "unlockSuccess": "Unlocked",
+      "unlockFailed": "Unlock failed",
+      "ideSuccess": "Opened in IDE",
+      "ideFailed": "Failed to open IDE",
+      "folderSuccess": "Folder opened",
+      "folderFailed": "Failed to open folder",
+      "deleteSuccess": "Deleted",
+      "forceDeleteSuccess": "Force deleted",
+      "deleteFailed": "Delete failed",
+      "deleteWarning": "Uncommitted changes or untracked files detected. Please confirm if you want to force delete."
+    },
+    "deleteModal": {
+      "title": "Confirm Deletion",
+      "forceTitle": "Force Delete Confirmation",
+      "desc": "The following worktree will be removed:",
+      "warning": "Uncommitted changes detected. Force deletion will lose these changes!",
+      "normalNote": "Git may refuse to delete if there are uncommitted changes.",
+      "cancel": "Cancel",
+      "confirm": "Delete",
+      "forceConfirm": "Force Delete",
+      "deleting": "Deleting..."
+    }
+  },
+  "create": {
+    "title": "Create Worktree",
+    "back": "Back",
+    "help": "Help",
+    "tabs": {
+      "existing": "Existing Branch/Commit",
+      "new": "New Branch"
+    },
+    "fields": {
+      "ref": "Ref (Branch name or commit)",
+      "refPlaceholder": "e.g. main / feature/x / 3a2f...",
+      "newBranch": "New Branch",
+      "newBranchPlaceholder": "e.g. feature/awesome",
+      "path": "Path (Relative to repo root or absolute path)",
+      "pathPlaceholder": "e.g. worktrees/feature-x"
+    },
+    "submit": "Create",
+    "preview": {
+      "title": "Will Execute",
+      "desc": "UI only calls local API, actual git commands are executed on your machine."
+    },
+    "result": {
+      "title": "Result",
+      "creating": "Creating...",
+      "success": "Created successfully",
+      "backToList": "Back to list",
+      "empty": "Results will be shown here after creation."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "preferences": {
+      "title": "Preferences",
+      "theme": "Theme Mode",
+      "language": "Language",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System",
+      "en": "English",
+      "zh": "中文"
+    },
+    "cli": {
+      "title": "CLI Configuration",
+      "baseDir": "baseDir",
+      "baseDirPlaceholder": "Default storage location, e.g. ../",
+      "openCommand": "openCommand",
+      "openCommandPlaceholder": "Leave empty for auto-detect (open / start / xdg-open)",
+      "editorCommand": "editorCommand",
+      "editorCommandPlaceholder": "e.g. code / cursor / trae",
+      "reset": "Reset",
+      "save": "Save Config"
+    },
+    "maintenance": {
+      "title": "Maintenance",
+      "prune": "Prune Invalid Worktrees",
+      "pruneDesc": "Executes `git worktree prune` to remove worktree records that no longer exist."
+    },
+    "note": {
+      "title": "Note",
+      "desc": "Settings are saved in `~/.config/wtree/config.json`, UI reads and writes via local API."
+    },
+    "toast": {
+      "saveSuccess": "Configuration saved",
+      "saveFailed": "Failed to save configuration",
+      "pruneSuccess": "Prune completed",
+      "pruneFailed": "Prune failed"
+    }
+  },
+  "helpPage": {
+    "title": "Help",
+    "commands": "Commands Reference",
+    "commandsDesc": "Running without parameters will enter interactive CLI; adding --ui will start local UI.",
+    "faq": {
+      "title": "FAQ",
+      "q1": "Not in a git repository?",
+      "a1": "Run inside a repository, or use `wtree --repo /path/to/repo` to specify path.",
+      "q2": "Port already in use?",
+      "a2": "Use `wtree --ui --port 0` to let system auto-assign a port.",
+      "q3": "Delete failed (uncommitted changes)?",
+      "a3": "Force Delete is supported in both CLI and UI modes, but please note that uncommitted changes will be lost."
+    }
+  }
+}
