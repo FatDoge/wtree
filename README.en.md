@@ -13,6 +13,17 @@ English | [简体中文](https://github.com/FatDoge/wtree/blob/main/README.md)
 - Support for Locking, Unlocking, and Pruning invalid worktrees
 - Local API executes git commands securely on your machine, data never leaves your computer
 
+## Screenshots
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/FatDoge/wtree/main/docs/screenshots/home.jpg" alt="Home" width="48%" />
+  <img src="https://raw.githubusercontent.com/FatDoge/wtree/main/docs/screenshots/new.jpg" alt="Create" width="48%" />
+</p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/FatDoge/wtree/main/docs/screenshots/settings.jpg" alt="Settings" width="48%" />
+  <img src="https://raw.githubusercontent.com/FatDoge/wtree/main/docs/screenshots/help.jpg" alt="Help" width="48%" />
+</p>
+
 ## Installation
 
 Install globally via npm (specify the public registry if you are using a private one):

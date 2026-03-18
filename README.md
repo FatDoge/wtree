@@ -13,6 +13,17 @@
 - 支持锁定 (Lock) / 解锁 (Unlock) 以及清理 (Prune) 无效的 worktree
 - 本地 API 执行 git 命令，数据不出机器
 
+## UI 截图
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/FatDoge/wtree/main/docs/screenshots/home.jpg" alt="首页" width="48%" />
+  <img src="https://raw.githubusercontent.com/FatDoge/wtree/main/docs/screenshots/new.jpg" alt="创建页面" width="48%" />
+</p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/FatDoge/wtree/main/docs/screenshots/settings.jpg" alt="设置页面" width="48%" />
+  <img src="https://raw.githubusercontent.com/FatDoge/wtree/main/docs/screenshots/help.jpg" alt="帮助页面" width="48%" />
+</p>
+
 ## 安装
 
 可以通过 npm 全局安装（如果使用了私有源，请指定官方源）：
