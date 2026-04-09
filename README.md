@@ -11,6 +11,8 @@
 - 支持创建新分支、从已有分支/提交创建 worktree
 - 支持在系统文件管理器或常用 IDE (Trae, Cursor, VS Code) 中一键打开
 - 支持锁定 (Lock) / 解锁 (Unlock) 以及清理 (Prune) 无效的 worktree
+- 非交互模式：支持通过命令行参数完全自动化操作，适合脚本和 AI Agent 调用
+- 提供 Agent Skill，可被 Trae / Cursor / Claude Code 等 AI 编码工具直接使用
 - 本地 API 执行 git 命令，数据不出机器
 
 ## UI 截图
@@ -80,13 +82,21 @@ wtree --ui --port 0
 - `--repo <path>`：指定仓库路径（默认使用当前目录）
 - `--no-open`：不自动打开浏览器
 - `--port <number>`：指定 UI 端口（`0` 表示自动分配）
+- `--json`：以 JSON 格式输出（适合脚本和 Agent 使用）
+- `--yes, -y`：自动确认所有提示
+- `--force, -f`：强制操作（如强制删除有未提交更改的 worktree）
+- `--dir <path>`：指定 worktree 目录路径（相对于 git 根目录）
+- `--base <ref>`：创建新分支时的基准引用（如 `main`、`origin/main`）
+- `--editor <name>`：创建后使用指定编辑器打开（`trae`、`cursor`、`code`、`none`）
+- `--no-editor`：创建后不打开编辑器
+- `--no-install`：创建后不自动安装依赖
 
 ## CLI 命令
 
 - `wtree`：交互式主菜单 (创建/删除/列表/打开/锁定/解锁/清理)
 - `wtree list`：打印 worktree 列表
 - `wtree create [branch]`：创建 worktree（支持交互式选择）
-- `wtree delete`：删除 worktree（交互式选择，支持强制删除）
+- `wtree delete [branch|path ...]`：删除 worktree（支持交互式选择和直接指定目标，支持强制删除）
 - `wtree open [path|branch]`：打开 worktree
 - `wtree lock [path|branch]`：锁定指定的 worktree，防止被移动或删除
 - `wtree unlock [path|branch]`：解锁指定的 worktree
@@ -95,6 +105,43 @@ wtree --ui --port 0
 - `wtree config get <key>`：读取配置项
 - `wtree config set <key> <value>`：设置配置项
 - `wtree help`：查看帮助
+
+## 非交互模式
+
+所有命令都支持通过参数完全非交互地执行，适合在脚本或 AI Agent 中使用：
+
+```bash
+# 查看 worktree 列表（JSON 输出）
+wtree list --json
+
+# 为已有分支创建 worktree
+wtree create feature/my-branch --yes --no-editor --no-install --json
+
+# 基于 main 创建新分支的 worktree
+wtree create feature/new-thing --base main --yes --dir worktrees/new-thing --no-editor --no-install --json
+
+# 删除指定 worktree
+wtree delete feature/old-branch --yes --json
+
+# 强制删除（即使有未提交更改）
+wtree delete feature/dirty --yes --force --json
+```
+
+## Agent Skill
+
+`wtree` 提供了 Agent Skill，可以让 AI 编码工具（Trae、Cursor、Claude Code 等）直接管理 git worktree。
+
+### 安装 Skill
+
+```bash
+# 安装到当前项目
+npx skills add FatDoge/wtree --skill wtree
+
+# 全局安装（所有项目可用）
+npx skills add FatDoge/wtree --skill wtree -g
+```
+
+安装后，AI Agent 会自动识别 `wtree` skill，在你需要管理 worktree 时自动调用。
 
 ## 配置
 
@@ -148,3 +195,4 @@ pnpm run check
 - `api/`：CLI + 本地 API（git 执行与配置读写）
 - `src/`：UI（React + Vite + Tailwind）
 - `shared/`：前后端共享类型
+- `skills/`：Agent Skill 定义

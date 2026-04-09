@@ -13,8 +13,24 @@ import { openPath } from '../core/open.js'
 import { readConfig, writeConfig, getConfigPaths } from '../core/config.js'
 import { startUiDevServer } from '../ui/startUiDev.js'
 
+type ParsedFlags = {
+  ui: boolean
+  noOpen: boolean
+  repo: string
+  port: number | undefined
+  json: boolean
+  yes: boolean
+  force: boolean
+  dir: string
+  base: string
+  editor: string | undefined
+  noEditor: boolean
+  noInstall: boolean
+}
+
 type Ctx = {
   rootDir: string
+  flags: ParsedFlags
 }
 
 type SourceSelection =
@@ -33,11 +49,19 @@ function errMsg(e: unknown) {
 
 function parseArgs(argv: string[]) {
   const args = [...argv]
-  const flags = {
+  const flags: ParsedFlags = {
     ui: false,
     noOpen: false,
     repo: '',
     port: undefined as number | undefined,
+    json: false,
+    yes: false,
+    force: false,
+    dir: '',
+    base: '',
+    editor: undefined,
+    noEditor: false,
+    noInstall: false,
   }
   const positional: string[] = []
 
@@ -60,6 +84,14 @@ function parseArgs(argv: string[]) {
       if (Number.isFinite(v)) flags.port = v
       continue
     }
+    if (a === '--json') { flags.json = true; continue }
+    if (a === '--yes' || a === '-y') { flags.yes = true; continue }
+    if (a === '--force' || a === '-f') { flags.force = true; continue }
+    if (a === '--dir') { flags.dir = String(args.shift() || ''); continue }
+    if (a === '--base') { flags.base = String(args.shift() || ''); continue }
+    if (a === '--editor') { flags.editor = String(args.shift() || ''); continue }
+    if (a === '--no-editor') { flags.noEditor = true; continue }
+    if (a === '--no-install') { flags.noInstall = true; continue }
     if (a.startsWith('--')) continue
     positional.push(a)
   }
@@ -99,8 +131,12 @@ function parseCommand(positional: string[]) {
   return { command: 'interactive' as CommandType, rest: positional }
 }
 
-function printWorktreeList(rootDir: string) {
+function printWorktreeList(rootDir: string, json = false) {
   const items = listWorktrees(rootDir)
+  if (json) {
+    console.info(JSON.stringify(items, null, 2))
+    return
+  }
   if (items.length === 0) {
     console.info('未读取到 worktree。')
     return
@@ -118,7 +154,7 @@ function printHelp() {
   console.info('  wtree')
   console.info('  wtree list')
   console.info('  wtree create [branch]')
-  console.info('  wtree delete')
+  console.info('  wtree delete [branch|path ...]')
   console.info('  wtree open [path|branch]')
   console.info('  wtree lock [path|branch]')
   console.info('  wtree unlock [path|branch]')
@@ -128,7 +164,23 @@ function printHelp() {
   console.info('  wtree config set <key> <value>')
   console.info('  wtree --ui [--repo <path>] [--no-open] [--port <number>]')
   console.info('')
+  console.info('选项:')
+  console.info('  --json          以 JSON 格式输出 (适合脚本/agent 使用)')
+  console.info('  --yes, -y       自动确认所有提示')
+  console.info('  --force, -f     强制操作 (如强制删除有未提交更改的 worktree)')
+  console.info('  --dir <path>    指定 worktree 目录路径 (相对于 git 根目录)')
+  console.info('  --base <ref>    创建新分支时的基准引用 (如 main, origin/main)')
+  console.info('  --editor <name> 创建后使用指定编辑器打开 (trae, cursor, code, none)')
+  console.info('  --no-editor     创建后不打开编辑器')
+  console.info('  --no-install    创建后不自动安装依赖')
+  console.info('')
   console.info('可用配置 key: baseDir, openCommand, editorCommand')
+  console.info('')
+  console.info('非交互示例:')
+  console.info('  wtree list --json')
+  console.info('  wtree create feat/x --yes --no-editor --no-install --json')
+  console.info('  wtree create feat/new --base main --yes --dir worktrees/feat-new --json')
+  console.info('  wtree delete feat/old --yes --force --json')
 }
 
 function resolveWorktree(rootDir: string, key: string) {
@@ -312,21 +364,23 @@ async function main() {
     return
   }
 
-  console.info(chalk.blue(`检测到git repo根目录 ${rootDir}，将在这里运行git命令`))
+  if (!flags.json) {
+    console.info(chalk.blue(`检测到git repo根目录 ${rootDir}，将在这里运行git命令`))
+  }
 
   const { command, rest } = parseCommand(positional)
   if (command === 'list') {
-    printWorktreeList(rootDir)
+    printWorktreeList(rootDir, flags.json)
     return
   }
 
   if (command === 'create') {
-    await createWorktree({ rootDir }, rest[0])
+    await createWorktree({ rootDir, flags }, rest[0])
     return
   }
 
   if (command === 'delete') {
-    await deleteWorktree({ rootDir })
+    await deleteWorktree({ rootDir, flags }, rest)
     return
   }
 
@@ -376,7 +430,7 @@ async function main() {
   const directBranch = rest[0]
 
   const action = await getUserAction(directBranch)
-  const ctx: Ctx = { rootDir }
+  const ctx: Ctx = { rootDir, flags }
   if (action === 'create') {
     await createWorktree(ctx, directBranch)
   } else if (action === 'delete') {
@@ -416,7 +470,7 @@ async function getUserAction(directBranch?: string) {
 }
 
 async function createWorktree(ctx: Ctx, directBranch?: string) {
-  const { rootDir } = ctx
+  const { rootDir, flags } = ctx
   const defaultBranch =
     git(rootDir, ['symbolic-ref', '--short', 'refs/remotes/origin/HEAD']).stdout
       .replace(/^origin\//, '')
@@ -429,13 +483,16 @@ async function createWorktree(ctx: Ctx, directBranch?: string) {
     selection,
     directBranch,
     defaultBranch,
+    flags,
   )
-  const { targetDir, dirName } = await selectTargetDir(rootDir, targetBranch)
+  const { targetDir, dirName } = await selectTargetDir(rootDir, targetBranch, flags)
 
-  console.info(chalk.green(`\n准备创建 Worktree:`))
-  console.info(`  分支: ${targetBranch}`)
-  console.info(`  目录: ${targetDir}`)
-  console.info(`  来源: ${baseRef || 'Existing Local'}`)
+  if (!flags.json) {
+    console.info(chalk.green(`\n准备创建 Worktree:`))
+    console.info(`  分支: ${targetBranch}`)
+    console.info(`  目录: ${targetDir}`)
+    console.info(`  来源: ${baseRef || 'Existing Local'}`)
+  }
 
   await createGitWorktree(
     rootDir,
@@ -448,8 +505,14 @@ async function createWorktree(ctx: Ctx, directBranch?: string) {
   )
 
   await setupWorktreeEnv(rootDir, targetDir, dirName)
-  await installDependencies(targetDir)
-  await openInIDE(targetDir)
+  await installDependencies(targetDir, flags.noInstall)
+  await openInIDE(targetDir, flags)
+
+  if (flags.json) {
+    const items = listWorktrees(rootDir)
+    const created = items.find(x => path.resolve(x.path) === path.resolve(targetDir))
+    console.info(JSON.stringify({ ok: true, data: created || null }))
+  }
 }
 
 async function selectSource(rootDir: string, directBranch: string | undefined, defaultBranch: string) {
@@ -503,6 +566,7 @@ async function resolveBranchInfo(
   selection: SourceSelection,
   directBranch: string | undefined,
   defaultBranch: string,
+  flags: ParsedFlags,
 ) {
   let targetBranch = ''
   let baseRef = ''
@@ -541,19 +605,24 @@ async function resolveBranchInfo(
         baseRef = `origin/${targetBranch}`
         isNewBranch = true
       } else {
-        const { createNew } = await inquirer.prompt([
-          {
-            type: 'confirm',
-            name: 'createNew',
-            message: `分支 ${targetBranch} 不存在。是否基于 ${defaultBranch} 创建新分支?`,
-            default: true,
-          },
-        ])
-        if (createNew) {
-          baseRef = defaultBranch
+        if (flags.yes) {
+          baseRef = flags.base || defaultBranch
           isNewBranch = true
         } else {
-          process.exit(1)
+          const { createNew } = await inquirer.prompt([
+            {
+              type: 'confirm',
+              name: 'createNew',
+              message: `分支 ${targetBranch} 不存在。是否基于 ${defaultBranch} 创建新分支?`,
+              default: true,
+            },
+          ])
+          if (createNew) {
+            baseRef = defaultBranch
+            isNewBranch = true
+          } else {
+            process.exit(1)
+          }
         }
       }
     }
@@ -612,16 +681,25 @@ async function resolveBranchInfo(
   return { targetBranch, baseRef, isNewBranch }
 }
 
-async function selectTargetDir(rootDir: string, targetBranch: string) {
+async function selectTargetDir(rootDir: string, targetBranch: string, flags: ParsedFlags) {
   const defaultDirName = `worktrees/${targetBranch.split('/').join('-')}`
-  const { dirName } = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'dirName',
-      message: `请输入 Worktree 目录路径 (相对于 Git 根目录, 默认: ${defaultDirName}):`,
-      default: defaultDirName,
-    },
-  ])
+
+  let dirName: string
+  if (flags.dir) {
+    dirName = flags.dir
+  } else if (flags.yes) {
+    dirName = defaultDirName
+  } else {
+    const result = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'dirName',
+        message: `请输入 Worktree 目录路径 (相对于 Git 根目录, 默认: ${defaultDirName}):`,
+        default: defaultDirName,
+      },
+    ])
+    dirName = result.dirName
+  }
 
   const targetDir = path.resolve(rootDir, dirName)
   if (fs.existsSync(targetDir)) {
@@ -682,7 +760,8 @@ async function setupWorktreeEnv(rootDir: string, targetDir: string, dirName: str
   }
 }
 
-async function installDependencies(targetDir: string) {
+async function installDependencies(targetDir: string, skip = false) {
+  if (skip) return
   if (!fs.existsSync(path.join(targetDir, 'package.json'))) return
   try {
     execSync('pnpm --version', { stdio: 'ignore' })
@@ -702,7 +781,18 @@ function hasCommand(cmd: string) {
   }
 }
 
-async function openInIDE(targetDir: string) {
+async function openInIDE(targetDir: string, flags: ParsedFlags) {
+  if (flags.noEditor) return
+  if (flags.editor !== undefined) {
+    if (flags.editor === 'none' || flags.editor === '') return
+    try {
+      execSync(`${flags.editor} "${targetDir}"`, { stdio: 'ignore' })
+    } catch (e: unknown) {
+      void e
+    }
+    return
+  }
+
   const editors: { name: string; value: string }[] = []
   if (hasCommand('trae')) editors.push({ name: `在 Trae 中打开 （trae ${targetDir}）`, value: 'trae' })
   if (hasCommand('cursor')) editors.push({ name: `在 Cursor 中打开 （cursor ${targetDir}）`, value: 'cursor' })
@@ -729,35 +819,64 @@ async function openInIDE(targetDir: string) {
   }
 }
 
-async function deleteWorktree(ctx: Ctx) {
-  const worktrees = getWorktreeList(ctx.rootDir)
-  const choices = getDeletableWorktrees(ctx.rootDir, worktrees)
+async function deleteWorktree(ctx: Ctx, targets: string[] = []) {
+  const { rootDir, flags } = ctx
+  const worktrees = getWorktreeList(rootDir)
+  const choices = getDeletableWorktrees(rootDir, worktrees)
   if (choices.length === 0) {
-    console.warn(chalk.yellow('没有可删除的 Worktree (除了主 Worktree)'))
+    if (flags.json) {
+      console.info(JSON.stringify({ ok: true, data: [], message: 'No deletable worktrees' }))
+    } else {
+      console.warn(chalk.yellow('没有可删除的 Worktree (除了主 Worktree)'))
+    }
     return
   }
 
-  const { targetPaths } = await inquirer.prompt([
-    {
-      type: 'checkbox',
-      name: 'targetPaths',
-      message: '请选择要删除的 Worktree:',
-      choices,
-      validate: (answer: string[]) => (answer.length > 0 ? true : '请至少选择一个'),
-    },
-  ])
+  let targetPaths: string[]
 
-  const { confirmDelete } = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'confirmDelete',
-      message: `确定要删除这 ${targetPaths.length} 个 Worktree 吗?`,
-      default: false,
-    },
-  ])
-  if (!confirmDelete) return
+  if (targets.length > 0) {
+    // Non-interactive: resolve each target to a worktree path
+    targetPaths = []
+    for (const key of targets) {
+      const wt = resolveWorktree(rootDir, key)
+      if (!wt) {
+        console.error(chalk.red(`未找到 worktree: ${key}`))
+        process.exit(1)
+      }
+      if (path.resolve(wt.path) === path.resolve(rootDir)) {
+        console.error(chalk.red(`不能删除主 worktree: ${key}`))
+        process.exit(1)
+      }
+      targetPaths.push(wt.path)
+    }
+  } else {
+    // Interactive: checkbox prompt
+    const result = await inquirer.prompt([
+      {
+        type: 'checkbox',
+        name: 'targetPaths',
+        message: '请选择要删除的 Worktree:',
+        choices,
+        validate: (answer: string[]) => (answer.length > 0 ? true : '请至少选择一个'),
+      },
+    ])
+    targetPaths = result.targetPaths
+  }
+
+  if (!flags.yes) {
+    const { confirmDelete } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'confirmDelete',
+        message: `确定要删除这 ${targetPaths.length} 个 Worktree 吗?`,
+        default: false,
+      },
+    ])
+    if (!confirmDelete) return
+  }
+
   for (const targetPath of targetPaths) {
-    await deleteSingleWorktree(ctx.rootDir, targetPath)
+    await deleteSingleWorktree(rootDir, targetPath, flags)
   }
 }
 
@@ -779,26 +898,47 @@ function getDeletableWorktrees(rootDir: string, worktrees: { path: string; branc
     })
 }
 
-async function deleteSingleWorktree(rootDir: string, targetPath: string) {
+async function deleteSingleWorktree(rootDir: string, targetPath: string, flags: ParsedFlags) {
   try {
     gitOrThrow(rootDir, ['worktree', 'remove', targetPath], 'WORKTREE_REMOVE')
-    console.info(chalk.green(`成功删除: ${targetPath}`))
+    if (flags.json) {
+      console.info(JSON.stringify({ ok: true, removed: targetPath }))
+    } else {
+      console.info(chalk.green(`成功删除: ${targetPath}`))
+    }
   } catch (e: unknown) {
-    console.error(chalk.red(`删除失败: ${errMsg(e)}`))
-    const { force } = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'force',
-        message: '删除失败 (可能有未提交的更改). 强制删除吗?',
-        default: false,
-      },
-    ])
-    if (!force) return
-    try {
-      gitOrThrow(rootDir, ['worktree', 'remove', '--force', targetPath], 'WORKTREE_REMOVE_FORCE')
-      console.info(chalk.green(`成功强制删除: ${targetPath}`))
-    } catch (forceErr: unknown) {
-      console.error(chalk.red(`强制删除也失败了: ${errMsg(forceErr)}`))
+    if (flags.force) {
+      try {
+        gitOrThrow(rootDir, ['worktree', 'remove', '--force', targetPath], 'WORKTREE_REMOVE_FORCE')
+        if (flags.json) {
+          console.info(JSON.stringify({ ok: true, removed: targetPath, forced: true }))
+        } else {
+          console.info(chalk.green(`成功强制删除: ${targetPath}`))
+        }
+      } catch (forceErr: unknown) {
+        if (flags.json) {
+          console.error(JSON.stringify({ ok: false, error: errMsg(forceErr), path: targetPath }))
+        } else {
+          console.error(chalk.red(`强制删除也失败了: ${errMsg(forceErr)}`))
+        }
+      }
+    } else {
+      console.error(chalk.red(`删除失败: ${errMsg(e)}`))
+      const { force } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'force',
+          message: '删除失败 (可能有未提交的更改). 强制删除吗?',
+          default: false,
+        },
+      ])
+      if (!force) return
+      try {
+        gitOrThrow(rootDir, ['worktree', 'remove', '--force', targetPath], 'WORKTREE_REMOVE_FORCE')
+        console.info(chalk.green(`成功强制删除: ${targetPath}`))
+      } catch (forceErr: unknown) {
+        console.error(chalk.red(`强制删除也失败了: ${errMsg(forceErr)}`))
+      }
     }
   }
 }
