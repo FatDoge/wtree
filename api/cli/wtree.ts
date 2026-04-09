@@ -6,6 +6,7 @@ import inquirer from 'inquirer'
 import chalk from 'chalk'
 import { execSync } from 'node:child_process'
 import fs from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { getRepoRoot } from '../core/git.js'
 import { git, gitOrThrow } from '../core/git.js'
 import { listWorktrees, parseWorktreePorcelain } from '../core/worktree.js'
@@ -26,6 +27,7 @@ type ParsedFlags = {
   editor: string | undefined
   noEditor: boolean
   noInstall: boolean
+  version: boolean
 }
 
 type Ctx = {
@@ -42,6 +44,25 @@ type SourceSelection =
 
 type SourceType = SourceSelection['type']
 type CommandType = 'list' | 'create' | 'delete' | 'open' | 'config' | 'help' | 'interactive' | 'prune' | 'lock' | 'unlock'
+
+function getVersion(): string {
+  try {
+    const __dirname = path.dirname(fileURLToPath(import.meta.url))
+    // 从 api/cli/ 或 dist-node/api/cli/ 向上查找 package.json
+    let dir = __dirname
+    for (let i = 0; i < 5; i++) {
+      const pkgPath = path.join(dir, 'package.json')
+      if (fs.existsSync(pkgPath)) {
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
+        return pkg.version || 'unknown'
+      }
+      dir = path.dirname(dir)
+    }
+    return 'unknown'
+  } catch {
+    return 'unknown'
+  }
+}
 
 function errMsg(e: unknown) {
   return e instanceof Error ? e.message : String(e)
@@ -62,6 +83,7 @@ function parseArgs(argv: string[]) {
     editor: undefined,
     noEditor: false,
     noInstall: false,
+    version: false,
   }
   const positional: string[] = []
 
@@ -92,6 +114,7 @@ function parseArgs(argv: string[]) {
     if (a === '--editor') { flags.editor = String(args.shift() || ''); continue }
     if (a === '--no-editor') { flags.noEditor = true; continue }
     if (a === '--no-install') { flags.noInstall = true; continue }
+    if (a === '--version' || a === '-v') { flags.version = true; continue }
     if (a.startsWith('--')) continue
     positional.push(a)
   }
@@ -163,6 +186,7 @@ function printHelp() {
   console.info('  wtree config get <key>')
   console.info('  wtree config set <key> <value>')
   console.info('  wtree --ui [--repo <path>] [--no-open] [--port <number>]')
+  console.info('  wtree --version, -v')
   console.info('')
   console.info('选项:')
   console.info('  --json          以 JSON 格式输出 (适合脚本/agent 使用)')
@@ -343,6 +367,12 @@ async function pruneWorktrees(rootDir: string) {
 
 async function main() {
   const { flags, positional } = parseArgs(process.argv.slice(2))
+
+  if (flags.version || positional[0] === 'version') {
+    console.info(getVersion())
+    return
+  }
+
   const cwd = flags.repo ? path.resolve(flags.repo) : process.cwd()
   const rootDir = getRepoRoot(cwd)
 
