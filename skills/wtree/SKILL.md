@@ -9,9 +9,28 @@ user-invocable: true
 
 You manage git worktrees using the `wtree` CLI tool. Always use non-interactive flags so commands complete without user input.
 
-## Prerequisites
+## Environment Setup (MUST do first)
 
-The `wtree` CLI must be installed globally (`npm install -g @fatdoge/wtree`) or run via `npx @fatdoge/wtree`. If working inside the wtree project itself, use `node dist-node/api/cli/wtree.js`.
+Before running any wtree command, you MUST check if wtree is installed locally. Run this check once at the start:
+
+```bash
+wtree --version 2>/dev/null
+```
+
+- **If it outputs a version number** (e.g., `0.2.1`): wtree is installed, proceed with commands directly using `wtree`.
+- **If it fails or outputs nothing**: wtree is NOT installed. Install it globally first:
+
+```bash
+npm install -g @fatdoge/wtree --registry=https://registry.npmjs.org/
+```
+
+Then verify the installation:
+
+```bash
+wtree --version
+```
+
+**Do NOT use `npx` to run wtree** — it is significantly slower. Always ensure wtree is installed globally first.
 
 ## Important Rules
 
