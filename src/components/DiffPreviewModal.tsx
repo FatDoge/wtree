@@ -1,5 +1,7 @@
+import '@pierre/diffs/dist/components/web-components.js'
+import { PatchDiff } from '@pierre/diffs/react'
 import { useTranslation } from 'react-i18next'
-import { Copy, ExternalLink, FileCode } from 'lucide-react'
+import { Copy, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 import Modal from './Modal'
 import Button from './Button'
@@ -23,26 +25,12 @@ const STATUS_LABELS: Record<string, { label: string; cls: string }> = {
 }
 
 function statusMeta(s: string) {
-  return STATUS_LABELS[s[0]?.toUpperCase()] ?? { label: s, cls: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' }
-}
-
-function DiffLine({ line }: { line: string }) {
-  if (line.startsWith('+++') || line.startsWith('---')) {
-    return <div className="text-slate-500 dark:text-slate-400 select-all">{line}</div>
-  }
-  if (line.startsWith('@@')) {
-    return <div className="text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/20 select-all">{line}</div>
-  }
-  if (line.startsWith('+')) {
-    return <div className="text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 select-all">{line}</div>
-  }
-  if (line.startsWith('-')) {
-    return <div className="text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 select-all">{line}</div>
-  }
-  if (line.startsWith('diff ') || line.startsWith('index ') || line.startsWith('new file') || line.startsWith('deleted file')) {
-    return <div className="text-slate-600 dark:text-slate-300 font-semibold select-all">{line}</div>
-  }
-  return <div className="text-slate-700 dark:text-slate-300 select-all">{line}</div>
+  return (
+    STATUS_LABELS[s[0]?.toUpperCase()] ?? {
+      label: s,
+      cls: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+    }
+  )
 }
 
 export default function DiffPreviewModal({ open, onClose, worktreePath, files, diff, loading }: Props) {
@@ -58,7 +46,6 @@ export default function DiffPreviewModal({ open, onClose, worktreePath, files, d
   }
 
   const handleOpenDiffscom = () => {
-    // Copy diff to clipboard and open diffs.com so the user can paste
     navigator.clipboard.writeText(diff).catch(() => {})
     window.open('https://diffs.com', '_blank', 'noopener,noreferrer')
     toast.info(t('diff.toast.openedDiffscom'))
@@ -99,7 +86,9 @@ export default function DiffPreviewModal({ open, onClose, worktreePath, files, d
         ) : (
           <>
             <div>
-              <div className="mb-1 text-xs text-slate-500 dark:text-slate-400">{t('diff.stagedFiles')} ({files.length})</div>
+              <div className="mb-1 text-xs text-slate-500 dark:text-slate-400">
+                {t('diff.stagedFiles')} ({files.length})
+              </div>
               <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
                 {files.map((f, i) => {
                   const meta = statusMeta(f.status)
@@ -120,16 +109,16 @@ export default function DiffPreviewModal({ open, onClose, worktreePath, files, d
 
             {diff ? (
               <div>
-                <div className="mb-1 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                  <FileCode className="h-3 w-3" />
-                  {t('diff.diffPreview')}
-                </div>
-                <div className="max-h-80 overflow-auto rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-3">
-                  <pre className="text-[11px] leading-5 font-mono whitespace-pre-wrap break-all">
-                    {diff.split('\n').map((line, i) => (
-                      <DiffLine key={i} line={line} />
-                    ))}
-                  </pre>
+                <div className="mb-1 text-xs text-slate-500 dark:text-slate-400">{t('diff.diffPreview')}</div>
+                <div className="max-h-96 overflow-auto rounded-lg border border-slate-200 dark:border-slate-800">
+                  <PatchDiff
+                    patch={diff}
+                    disableWorkerPool
+                    options={{
+                      theme: { dark: 'github-dark', light: 'github-light' },
+                      themeType: 'system',
+                    }}
+                  />
                 </div>
               </div>
             ) : null}
