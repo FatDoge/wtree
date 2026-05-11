@@ -1,4 +1,3 @@
-import '@pierre/diffs/dist/components/web-components.js'
 import { PatchDiff } from '@pierre/diffs/react'
 import { useTranslation } from 'react-i18next'
 import { Copy, ExternalLink } from 'lucide-react'

@@ -1,7 +1,7 @@
 {
   "name": "@fatdoge/wtree",
   "private": false,
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "CLI + UI tool for managing git worktrees",
   "keywords": [
     "git",
