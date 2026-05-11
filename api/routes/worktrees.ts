@@ -1,6 +1,6 @@
 import express, { type Request, type Response } from 'express'
 import path from 'node:path'
-import { getGitDirAbsolute } from '../core/git.js'
+import { getGitDirAbsolute, git } from '../core/git.js'
 import { listWorktrees } from '../core/worktree.js'
 import { gitOrThrow } from '../core/git.js'
 import { pathFromId } from '../core/id.js'
@@ -12,6 +12,8 @@ import type {
   RepoInfo,
   WtuiConfig,
   WorktreeItem,
+  WorktreeStagedInfo,
+  StagedFileChange,
 } from '../../shared/wtui-types.js'
 
 export function createWorktreeRouter(getRepoRoot: () => string) {
@@ -190,6 +192,38 @@ export function createWorktreeRouter(getRepoRoot: () => string) {
         res.status(500).json({
           ok: false,
           error: { code: 'UNLOCK_FAILED', message: errMsg(e) || 'Unlock failed' },
+        })
+      }
+    },
+  )
+
+  router.get(
+    '/worktrees/:id/staged',
+    (req: Request<{ id: string }>, res: Response<ApiResult<WorktreeStagedInfo>>) => {
+      try {
+        const wtPath = pathFromId(req.params.id)
+
+        const statusResult = git(wtPath, ['diff', '--cached', '--name-status'])
+        const files: StagedFileChange[] = statusResult.ok
+          ? statusResult.stdout
+              .split('\n')
+              .map((line) => line.trim())
+              .filter(Boolean)
+              .map((line) => {
+                const tab = line.indexOf('\t')
+                if (tab === -1) return { status: '?', path: line }
+                return { status: line.slice(0, tab).trim(), path: line.slice(tab + 1).trim() }
+              })
+          : []
+
+        const diffResult = git(wtPath, ['diff', '--cached'])
+        const diff = diffResult.ok ? diffResult.stdout : ''
+
+        res.json({ ok: true, data: { files, diff } })
+      } catch (e: unknown) {
+        res.status(500).json({
+          ok: false,
+          error: { code: 'STAGED_DIFF_FAILED', message: errMsg(e) || 'Failed to get staged diff' },
         })
       }
     },

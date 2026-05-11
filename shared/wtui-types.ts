@@ -25,6 +25,16 @@ export type WtuiConfig = {
   editorCommand?: string
 }
 
+export type StagedFileChange = {
+  status: string
+  path: string
+}
+
+export type WorktreeStagedInfo = {
+  files: StagedFileChange[]
+  diff: string
+}
+
 export type ApiError = {
   code: string
   message: string
