@@ -17,7 +17,7 @@ Before running any wtree command, you MUST check if wtree is installed locally. 
 wtree --version 2>/dev/null
 ```
 
-- **If it outputs a version number** (e.g., `0.2.1`): wtree is installed, proceed with commands directly using `wtree`.
+- **If it outputs a version number** (e.g., `0.3.0`): wtree is installed, proceed with commands directly using `wtree`.
 - **If it fails or outputs nothing**: wtree is NOT installed. Install it globally first:
 
 ```bash

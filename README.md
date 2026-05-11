@@ -8,6 +8,9 @@
 
 - 交互式创建与删除 worktree (支持强制删除未提交更改)
 - UI 模式本地启动，浏览器可视化管理，支持浅色/深色模式切换以及中英文国际化
+- IDE 风格 Diff 预览：左右分栏布局，左侧文件树（@pierre/trees）+ 右侧单文件 diff（@pierre/diffs），支持已暂存 / 未暂存分组展示
+- 左侧底部集成 Git 提交记录图（git log --graph），可折叠查看
+- 可拖拽分割线自由调整左右面板宽度
 - 支持创建新分支、从已有分支/提交创建 worktree
 - 支持在系统文件管理器或常用 IDE (Trae, Cursor, VS Code) 中一键打开
 - 支持锁定 (Lock) / 解锁 (Unlock) 以及清理 (Prune) 无效的 worktree

@@ -8,6 +8,9 @@ English | [简体中文](https://github.com/FatDoge/wtree/blob/main/README.md)
 
 - Interactive creation and deletion of worktrees (supports force deletion of uncommitted changes)
 - Local UI mode with a browser-based visual management interface, supporting Light/Dark mode and i18n (English/Chinese)
+- IDE-style Diff Preview: split-pane layout with a file tree (@pierre/trees) on the left and single-file diff (@pierre/diffs) on the right, showing staged and unstaged changes separately
+- Integrated Git commit graph (git log --graph) at the bottom of the sidebar, collapsible
+- Draggable divider to freely resize left/right panels
 - Support for creating worktrees from new branches or existing branches/commits
 - Open worktrees instantly in your system file manager or preferred IDEs (Trae, Cursor, VS Code)
 - Support for Locking, Unlocking, and Pruning invalid worktrees
