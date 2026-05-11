@@ -128,6 +128,21 @@
       "pruneFailed": "Prune failed"
     }
   },
+  "diff": {
+    "title": "Staged Changes",
+    "viewStaged": "Staged Diff",
+    "stagedFiles": "Staged files",
+    "diffPreview": "Diff preview",
+    "noChanges": "No staged changes in this worktree.",
+    "copyDiff": "Copy Diff",
+    "openDiffscom": "Open in diffs.com",
+    "close": "Close",
+    "toast": {
+      "copied": "Diff copied to clipboard",
+      "copyFailed": "Failed to copy diff",
+      "openedDiffscom": "Diff copied — paste it in diffs.com"
+    }
+  },
   "helpPage": {
     "title": "Help",
     "commands": "Commands Reference",

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { CreateWorktreeRequest, WorktreeItem } from '../../shared/wtui-types'
+import type { CreateWorktreeRequest, WorktreeItem, WorktreeStagedInfo } from '../../shared/wtui-types'
 import { apiDelete, apiGet, apiPost } from '@/utils/api'
 
 type WorktreeState = {
@@ -16,6 +16,7 @@ type WorktreeState = {
   prune: () => Promise<boolean>
   branches: string[]
   fetchBranches: () => Promise<void>
+  fetchStagedDiff: (id: string) => Promise<WorktreeStagedInfo | null>
 }
 
 export const useWorktreeStore = create<WorktreeState>((set, get) => ({
@@ -89,5 +90,10 @@ export const useWorktreeStore = create<WorktreeState>((set, get) => ({
   fetchBranches: async () => {
     const r = await apiGet<string[]>('/api/branches')
     if (r.ok) set({ branches: r.data })
+  },
+  fetchStagedDiff: async (id: string) => {
+    const r = await apiGet<WorktreeStagedInfo>(`/api/worktrees/${encodeURIComponent(id)}/staged`)
+    if (r.ok) return r.data
+    return null
   },
 }))

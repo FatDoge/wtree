@@ -1,11 +1,13 @@
-import { Copy, ExternalLink, Plus, RefreshCw, Settings, Trash2, Lock, Unlock, Code } from 'lucide-react'
+import { Copy, ExternalLink, Plus, RefreshCw, Settings, Trash2, Lock, Unlock, Code, GitCompare } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Button from '@/components/Button'
 import Modal from '@/components/Modal'
+import DiffPreviewModal from '@/components/DiffPreviewModal'
 import { useWorktreeStore } from '@/stores/worktreeStore'
 import { toast } from 'sonner'
+import type { StagedFileChange } from '../../shared/wtui-types'
 
 function truncatePath(p: string) {
   if (p.length <= 70) return p
@@ -24,11 +26,19 @@ export default function Worktrees() {
   const lock = useWorktreeStore((s) => s.lock)
   const unlock = useWorktreeStore((s) => s.unlock)
 
+  const fetchStagedDiff = useWorktreeStore((s) => s.fetchStagedDiff)
+
   const [removeId, setRemoveId] = useState<string | null>(null)
   const [forceDelete, setForceDelete] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [diffWorktreeId, setDiffWorktreeId] = useState<string | null>(null)
+  const [diffFiles, setDiffFiles] = useState<StagedFileChange[]>([])
+  const [diffContent, setDiffContent] = useState('')
+  const [diffLoading, setDiffLoading] = useState(false)
+
   const selected = useMemo(() => items.find((x) => x.id === selectedId), [items, selectedId])
   const toRemove = useMemo(() => items.find((x) => x.id === removeId), [items, removeId])
+  const diffWorktree = useMemo(() => items.find((x) => x.id === diffWorktreeId), [items, diffWorktreeId])
 
   useEffect(() => {
     refresh()
@@ -38,6 +48,28 @@ export default function Worktrees() {
     setRemoveId(null)
     setForceDelete(false)
     setIsDeleting(false)
+  }
+
+  const openDiff = async (id: string) => {
+    setDiffWorktreeId(id)
+    setDiffFiles([])
+    setDiffContent('')
+    setDiffLoading(true)
+    try {
+      const info = await fetchStagedDiff(id)
+      if (info) {
+        setDiffFiles(info.files)
+        setDiffContent(info.diff)
+      }
+    } finally {
+      setDiffLoading(false)
+    }
+  }
+
+  const closeDiff = () => {
+    setDiffWorktreeId(null)
+    setDiffFiles([])
+    setDiffContent('')
   }
 
   const handleDelete = async () => {
@@ -171,6 +203,17 @@ export default function Worktrees() {
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation()
+                            openDiff(wt.id)
+                          }}
+                          title={t('diff.viewStaged')}
+                        >
+                          <GitCompare className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
                             open(wt.id).then((ok) =>
                               ok
                                 ? toast.success(t('worktrees.toast.folderSuccess'))
@@ -282,6 +325,15 @@ export default function Worktrees() {
                     <ExternalLink className="h-4 w-4" />
                     {t('worktrees.actions.folder')}
                   </Button>
+                  <Button
+                    className="w-full sm:w-auto"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => openDiff(selected.id)}
+                  >
+                    <GitCompare className="h-4 w-4" />
+                    {t('diff.viewStaged')}
+                  </Button>
                 </div>
               </div>
             ) : (
@@ -300,6 +352,15 @@ export default function Worktrees() {
           </div>
         </div>
       </div>
+
+      <DiffPreviewModal
+        open={Boolean(diffWorktreeId)}
+        onClose={closeDiff}
+        worktreePath={diffWorktree?.path ?? ''}
+        files={diffFiles}
+        diff={diffContent}
+        loading={diffLoading}
+      />
 
       <Modal
         title={forceDelete ? t('worktrees.deleteModal.forceTitle') : t('worktrees.deleteModal.title')}

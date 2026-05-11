@@ -128,6 +128,21 @@
       "pruneFailed": "清理失败"
     }
   },
+  "diff": {
+    "title": "暂存区变动",
+    "viewStaged": "暂存 Diff",
+    "stagedFiles": "暂存文件",
+    "diffPreview": "Diff 预览",
+    "noChanges": "该 worktree 暂存区没有变动。",
+    "copyDiff": "复制 Diff",
+    "openDiffscom": "在 diffs.com 中查看",
+    "close": "关闭",
+    "toast": {
+      "copied": "Diff 已复制到剪贴板",
+      "copyFailed": "复制 Diff 失败",
+      "openedDiffscom": "Diff 已复制 — 请粘贴到 diffs.com"
+    }
+  },
   "helpPage": {
     "title": "帮助",
     "commands": "命令速查",
