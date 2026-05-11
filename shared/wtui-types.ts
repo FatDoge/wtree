@@ -25,14 +25,24 @@ export type WtuiConfig = {
   editorCommand?: string
 }
 
-export type StagedFileChange = {
+export type FileChange = {
   status: string
   path: string
 }
 
-export type WorktreeStagedInfo = {
-  files: StagedFileChange[]
-  diff: string
+export type CommitInfo = {
+  hash: string
+  shortHash: string
+  message: string
+  author: string
+  date: string
+  parents: string[]
+}
+
+export type WorktreeDiffInfo = {
+  staged: { files: FileChange[]; diff: string }
+  unstaged: { files: FileChange[]; diff: string }
+  commitGraph: string
 }
 
 export type ApiError = {

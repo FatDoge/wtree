@@ -7,13 +7,15 @@ interface Props {
   title: string
   children: ReactNode
   footer?: ReactNode
-  size?: 'md' | 'lg' | 'xl'
+  size?: 'md' | 'lg' | 'xl' | '2xl' | 'full'
 }
 
 const SIZE_CLS: Record<string, string> = {
   md: 'max-w-md',
   lg: 'max-w-2xl',
   xl: 'max-w-4xl',
+  '2xl': 'max-w-6xl',
+  full: 'max-w-[calc(100vw-2rem)]',
 }
 
 export default function Modal({ open, onClose, title, children, footer, size = 'md' }: Props) {

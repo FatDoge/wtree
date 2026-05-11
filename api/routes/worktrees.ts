@@ -12,8 +12,8 @@ import type {
   RepoInfo,
   WtuiConfig,
   WorktreeItem,
-  WorktreeStagedInfo,
-  StagedFileChange,
+  WorktreeDiffInfo,
+  FileChange,
 } from '../../shared/wtui-types.js'
 
 export function createWorktreeRouter(getRepoRoot: () => string) {
@@ -199,31 +199,46 @@ export function createWorktreeRouter(getRepoRoot: () => string) {
 
   router.get(
     '/worktrees/:id/staged',
-    (req: Request<{ id: string }>, res: Response<ApiResult<WorktreeStagedInfo>>) => {
+    (req: Request<{ id: string }>, res: Response<ApiResult<WorktreeDiffInfo>>) => {
       try {
         const wtPath = pathFromId(req.params.id)
 
-        const statusResult = git(wtPath, ['diff', '--cached', '--name-status'])
-        const files: StagedFileChange[] = statusResult.ok
-          ? statusResult.stdout
-              .split('\n')
-              .map((line) => line.trim())
-              .filter(Boolean)
-              .map((line) => {
-                const tab = line.indexOf('\t')
-                if (tab === -1) return { status: '?', path: line }
-                return { status: line.slice(0, tab).trim(), path: line.slice(tab + 1).trim() }
-              })
-          : []
+        const parseNameStatus = (stdout: string): FileChange[] =>
+          stdout
+            .split('\n')
+            .map((line) => line.trim())
+            .filter(Boolean)
+            .map((line) => {
+              const tab = line.indexOf('\t')
+              if (tab === -1) return { status: '?', path: line }
+              return { status: line.slice(0, tab).trim(), path: line.slice(tab + 1).trim() }
+            })
 
-        const diffResult = git(wtPath, ['diff', '--cached'])
-        const diff = diffResult.ok ? diffResult.stdout : ''
+        const stagedStatus = git(wtPath, ['diff', '--cached', '--name-status'])
+        const stagedFiles = stagedStatus.ok ? parseNameStatus(stagedStatus.stdout) : []
+        const stagedDiffResult = git(wtPath, ['diff', '--cached'])
+        const stagedDiff = stagedDiffResult.ok ? stagedDiffResult.stdout : ''
 
-        res.json({ ok: true, data: { files, diff } })
+        const unstagedStatus = git(wtPath, ['diff', '--name-status'])
+        const unstagedFiles = unstagedStatus.ok ? parseNameStatus(unstagedStatus.stdout) : []
+        const unstagedDiffResult = git(wtPath, ['diff'])
+        const unstagedDiff = unstagedDiffResult.ok ? unstagedDiffResult.stdout : ''
+
+        const graphResult = git(wtPath, ['log', '--graph', '--abbrev-commit', '--format=%h %s (%an, %ar)', '-20'])
+        const commitGraph = graphResult.ok ? graphResult.stdout : ''
+
+        res.json({
+          ok: true,
+          data: {
+            staged: { files: stagedFiles, diff: stagedDiff },
+            unstaged: { files: unstagedFiles, diff: unstagedDiff },
+            commitGraph,
+          },
+        })
       } catch (e: unknown) {
         res.status(500).json({
           ok: false,
-          error: { code: 'STAGED_DIFF_FAILED', message: errMsg(e) || 'Failed to get staged diff' },
+          error: { code: 'DIFF_FAILED', message: errMsg(e) || 'Failed to get diff' },
         })
       }
     },

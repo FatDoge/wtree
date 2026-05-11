@@ -129,18 +129,20 @@
     }
   },
   "diff": {
-    "title": "Staged Changes",
-    "viewStaged": "Staged Diff",
-    "stagedFiles": "Staged files",
+    "title": "Changes",
+    "viewStaged": "Diff",
+    "stagedFiles": "Staged",
+    "unstagedFiles": "Unstaged",
     "diffPreview": "Diff preview",
-    "noChanges": "No staged changes in this worktree.",
+    "noChanges": "No changes in this worktree.",
+    "selectFile": "Select a file to view diff",
+    "noDiffContent": "No diff content for this file",
+    "commits": "Commits",
     "copyDiff": "Copy Diff",
-    "openDiffscom": "Open in diffs.com",
     "close": "Close",
     "toast": {
       "copied": "Diff copied to clipboard",
-      "copyFailed": "Failed to copy diff",
-      "openedDiffscom": "Diff copied — paste it in diffs.com"
+      "copyFailed": "Failed to copy diff"
     }
   },
   "helpPage": {

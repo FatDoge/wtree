@@ -129,18 +129,20 @@
     }
   },
   "diff": {
-    "title": "暂存区变动",
-    "viewStaged": "暂存 Diff",
-    "stagedFiles": "暂存文件",
+    "title": "变更",
+    "viewStaged": "Diff",
+    "stagedFiles": "已暂存",
+    "unstagedFiles": "未暂存",
     "diffPreview": "Diff 预览",
-    "noChanges": "该 worktree 暂存区没有变动。",
+    "noChanges": "该 worktree 没有变动。",
+    "selectFile": "选择文件查看 diff",
+    "noDiffContent": "该文件没有 diff 内容",
+    "commits": "提交记录",
     "copyDiff": "复制 Diff",
-    "openDiffscom": "在 diffs.com 中查看",
     "close": "关闭",
     "toast": {
       "copied": "Diff 已复制到剪贴板",
-      "copyFailed": "复制 Diff 失败",
-      "openedDiffscom": "Diff 已复制 — 请粘贴到 diffs.com"
+      "copyFailed": "复制 Diff 失败"
     }
   },
   "helpPage": {

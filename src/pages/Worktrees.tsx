@@ -7,7 +7,7 @@ import Modal from '@/components/Modal'
 import DiffPreviewModal from '@/components/DiffPreviewModal'
 import { useWorktreeStore } from '@/stores/worktreeStore'
 import { toast } from 'sonner'
-import type { StagedFileChange } from '../../shared/wtui-types'
+import type { WorktreeDiffInfo } from '../../shared/wtui-types'
 
 function truncatePath(p: string) {
   if (p.length <= 70) return p
@@ -32,8 +32,7 @@ export default function Worktrees() {
   const [forceDelete, setForceDelete] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [diffWorktreeId, setDiffWorktreeId] = useState<string | null>(null)
-  const [diffFiles, setDiffFiles] = useState<StagedFileChange[]>([])
-  const [diffContent, setDiffContent] = useState('')
+  const [diffInfo, setDiffInfo] = useState<WorktreeDiffInfo | null>(null)
   const [diffLoading, setDiffLoading] = useState(false)
 
   const selected = useMemo(() => items.find((x) => x.id === selectedId), [items, selectedId])
@@ -52,15 +51,11 @@ export default function Worktrees() {
 
   const openDiff = async (id: string) => {
     setDiffWorktreeId(id)
-    setDiffFiles([])
-    setDiffContent('')
+    setDiffInfo(null)
     setDiffLoading(true)
     try {
       const info = await fetchStagedDiff(id)
-      if (info) {
-        setDiffFiles(info.files)
-        setDiffContent(info.diff)
-      }
+      if (info) setDiffInfo(info)
     } finally {
       setDiffLoading(false)
     }
@@ -68,8 +63,7 @@ export default function Worktrees() {
 
   const closeDiff = () => {
     setDiffWorktreeId(null)
-    setDiffFiles([])
-    setDiffContent('')
+    setDiffInfo(null)
   }
 
   const handleDelete = async () => {
@@ -357,8 +351,7 @@ export default function Worktrees() {
         open={Boolean(diffWorktreeId)}
         onClose={closeDiff}
         worktreePath={diffWorktree?.path ?? ''}
-        files={diffFiles}
-        diff={diffContent}
+        diffInfo={diffInfo}
         loading={diffLoading}
       />
 
