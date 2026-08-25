@@ -1,3 +1,5 @@
+
+
 # wtree
 
 [English](https://github.com/FatDoge/wtree/blob/main/README.en.md) | 简体中文
@@ -93,6 +95,7 @@ wtree --ui --port 0
 - `--editor <name>`：创建后使用指定编辑器打开（`trae`、`cursor`、`code`、`none`）
 - `--no-editor`：创建后不打开编辑器
 - `--no-install`：创建后不自动安装依赖
+- `--version, -v`：显示版本号
 
 ## CLI 命令
 
